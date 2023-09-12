@@ -40,36 +40,13 @@ namespace ProcessImage
 
         static async Task<string> AnalyzeImageContent(ComputerVisionClient client, string urlFile)
         {
-            // Analyze the file using Computer Vision Client
-            var textHeaders = await client.ReadAsync(urlFile);
-            string operationLocation = textHeaders.OperationLocation;
-            Thread.Sleep(2000);
-
-            const int numberOfCharsInOperationId = 36;
-            string operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
-
-            // Read back the results from the analysis request
-            ReadOperationResult results;
-            do
+            var text = await client.DescribeImageAsync(urlFile);
+            if (text.Captions.Count == 0)
             {
-                results = await client.GetReadResultAsync(Guid.Parse(operationId));
-            }
-            while ((results.Status == OperationStatusCodes.Running ||
-                results.Status == OperationStatusCodes.NotStarted));
-
-            var textUrlFileResults = results.AnalyzeResult.ReadResults;
-
-            // Assemble into readable string
-            StringBuilder text = new StringBuilder();
-            foreach (ReadResult page in textUrlFileResults)
-            {
-                foreach (Line line in page.Lines)
-                {
-                    text.AppendLine(line.Text);
-                }
+                return "No description detected.";
             }
 
-            return text.ToString();
+            return text.Captions[0].Text;
         }
     }
 }
