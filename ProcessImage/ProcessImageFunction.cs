@@ -46,7 +46,13 @@ namespace ProcessImage
                 return "No description detected.";
             }
 
-            return text.Captions[0].Text;
+            string contents = "";
+            for (int i = 0 ; i < text.Captions.Count; i++)
+            {
+                contents += text.Captions[i].Text + ", ";
+            }
+
+            return contents;
         }
     }
 }
